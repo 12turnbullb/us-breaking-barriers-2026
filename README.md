@@ -42,13 +42,3 @@ These apply to every build unless a beneficiary's documents say otherwise:
 | **World Resources Institute** | AskWRI | A research assistant on Bedrock and AgentCore that finds, summarizes, and cites WRI publications, with translation | [Vision](World%20Resources%20Institute/AskWRI-vision-document.md) · [Technical](World%20Resources%20Institute/AskWRI-technical-document.md) |
 
 > `.docx` files don't render on GitHub. Select **View raw** to download them.
-
----
-
-## Adding or updating a beneficiary
-
-1. Create a folder named after the organization at the repository root.
-2. Add a Vision Document and a Technical Document. Markdown (`.md`) is preferred because GitHub renders it in the browser.
-3. Put supporting material (sample data, design assets, background PDFs) in a `resources/` subfolder.
-4. Only include data that is synthetic, mocked, or publicly available.
-5. Add a row to the table above.
