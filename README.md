@@ -9,8 +9,6 @@ Each beneficiary folder has two core documents:
 
 Some folders also include sample data, background material, or design assets.
 
-> **Confidential.** This repository is private. It contains materials that beneficiary organizations shared with us. Don't make it public, fork it to a public account, or share its contents outside the event teams.
-
 ---
 
 ## Hackathon ground rules
@@ -19,7 +17,6 @@ These apply to every build unless a beneficiary's documents say otherwise:
 
 - **Two-day build.** Keep the scope to one end-to-end slice that you can demo.
 - **Empty AWS sandbox account.** Teams can't access any beneficiary's environment.
-- **Greenfield by default.** For brownfield workloads, build a self-contained vertical slice that mirrors the existing stack without integrating with it.
 - **Synthetic data only.** All data must be synthetic, mocked, or already publicly available.
 
 ---
