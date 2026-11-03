@@ -72,7 +72,7 @@
 
 ### Data and Evaluation
 
-- **Corpus**: Sample 50 to 150 of the 1,348 public documents at https://www.wri.org/resources/type/research-65, or use WRI's dump.
+- **Corpus**: Sample 50 to 150 of the 1,348 public documents at https://www.wri.org/resources/type/research-65, or use [WRI's dump](https://onewri-my.sharepoint.com/:f:/g/personal/timothy_anderegg_wri_org/IgB5qBzXPu0lS5FkPTVOnIsgAeMUlDguTnrbMIwLijDtYrk?e=5m7rni&xsdata=MDV8MDJ8VGltb3RoeS5BbmRlcmVnZ0B3cmkub3JnfDExM2I1YTU0MTgwMzQwMmFhNWY1MDhkZjM5YmVhMGUzfDQ3NmJhYzFmMzZiMjRhZDk4Njk5Y2RhNmJhZDFmODYyfDB8MHw2MzkyOTMxNjM4NjM2MzA4MjJ8VW5rbm93bnxUV0ZwYkdac2IzZDhleUpGYlhCMGVVMWhjR2tpT25SeWRXVXNJbFlpT2lJd0xqQXVNREF3TUNJc0lsQWlPaUpYYVc0ek1pSXNJa0ZPSWpvaVRXRnBiQ0lzSWxkVUlqb3lmUT09fDB8fHw%3d&sdata=UzZJMFE3alZZaVZyMjQ0OElTczNaejdiSHNObm1hZjdLWDF0K1JlbGV2Zz0%3d). 
 - **Metadata**: Title, URL, date, program, language.
 - **Citations**: Title, link, and passage or page.
 - **Evaluation**: 15 to 25 test questions with expected sources; report recall and precision; include one unanswerable question.
