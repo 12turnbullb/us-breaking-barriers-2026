@@ -6,7 +6,7 @@
 - **Primary Runtime Environment**: Cloud
 - **Cloud Provider**: AWS
 - **Target Deployment Model**: Serverless-first, fully defined as infrastructure-as-code. A React SPA on Amplify Hosting calls a Python FastAPI backend on Lambda behind API Gateway (Cognito-authorized); long-running AI work runs asynchronously on Strands agents hosted on Bedrock AgentCore, grounded by a Bedrock Knowledge Base over S3 Vectors. The entire stack is redeployable into ASPPH's own AWS account after the event.
-- **Customer Team Experience**: Standalone hackathon build in an AWS-provided Workshop Studio account (account `963505482519`, region `us-east-1`). Uses only public or synthetic content — no proprietary member data and no ARIE production data. No MyASPPH single sign-on; demo users are pre-provisioned in Cognito.
+- **Customer Team Experience**: Standalone hackathon build in an AWS-provided Workshop Studio account. Uses only public or synthetic content — no proprietary member data and no ARIE production data. No MyASPPH single sign-on; demo users are pre-provisioned in Cognito.
 
 ---
 
@@ -69,8 +69,8 @@
 
 ### Cloud Provider
 - **Primary Provider**: AWS
-- **Account Structure**: AWS-provided Workshop Studio account `963505482519` for the hackathon; IaC enables redeploy into ASPPH's own account post-event.
-- **Regions**: `us-east-1`. Bedrock model access, S3 Vectors, AgentCore, and Bedrock Knowledge Bases confirmed available before the event.
+- **Account Structure**: AWS-provided Workshop Studio account for the hackathon; IaC enables redeploy into ASPPH's own account post-event.
+- **Regions**: `us-west-2`. Bedrock model access, S3 Vectors, AgentCore, and Bedrock Knowledge Bases confirmed available before the event.
 
 ### Core Services
 
