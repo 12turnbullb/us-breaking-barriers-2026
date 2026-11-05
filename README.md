@@ -1,41 +1,129 @@
-# AWS Breaking Barriers 2026: Beneficiary Scoping Wiki
+# PHACT: Public Health AI Curriculum Transformation
 
-Scoping documents for the nonprofit beneficiaries taking part in **AWS Breaking Barriers 2026** (November 3–5, 2026: two build days, then presentations on day 3).
+PHACT helps public health faculty update their syllabi. A faculty member uploads a syllabus, and PHACT:
 
-Each beneficiary folder has two core documents:
+1. Grades it against the 22 CEPH foundational competencies and suggests changes for the gaps.
+2. Recommends ways to bring AI into the course responsibly, or to make assessments AI-resistant, citing syllabi other faculty have had approved.
+3. Lets the faculty member accept, decline, or edit each suggestion. Every accepted set becomes a new version.
+4. Sends the finished syllabus to an ASPPH admin. An approved syllabus joins the shared library that later reviews draw peer examples from.
 
-- **Vision Document:** the problem, users, business drivers, MVP scope, and success criteria.
-- **Technical Document:** the target architecture, AWS services, data, constraints, and build guidance.
+Built for AWS Breaking Barriers 2026 with synthetic data only. Everything runs serverless in one AWS SAM stack.
 
-Some folders also include sample data, background material, or design assets.
+## Architecture
 
----
+![PHACT architecture](docs/architecture.png)
 
-## Hackathon ground rules
+The diagram source is [`docs/architecture.drawio`](docs/architecture.drawio). Open it at [app.diagrams.net](https://app.diagrams.net) to edit it.
 
-These apply to every build unless a beneficiary's documents say otherwise:
+**Front door.** CloudFront serves the React app from a private S3 bucket. Users sign in with Cognito, which returns a signed ID token (a JWT) carrying the user's ID, email, and group (`faculty` or `admin`). Every API call sends that token, and API Gateway's Cognito authorizer checks it before any Lambda runs.
 
-- **Two-day build.** Keep the scope to one end-to-end slice that you can demo.
-- **Empty AWS sandbox account.** Teams can't access any beneficiary's environment.
-- **Synthetic data only.** All data must be synthetic, mocked, or already publicly available.
+**Faculty flow.**
+- **Upload:** a Lambda extracts the text. Bedrock Guardrails rejects off-topic content, and Amazon Comprehend permanently replaces personal details with labels such as `[name removed]`. Then the original file is deleted.
+- **Review:** reviews run asynchronously. A start Lambda queues the job in SQS, and the browser polls for status. A worker Lambda retrieves the CEPH competencies (KB1) and approved peer syllabi (KB2) from Bedrock Knowledge Bases and asks Claude on Amazon Bedrock for proposed changes. The guardrail checks Claude's output too.
+- **Decide:** the faculty member's choices are saved as the next version. Faculty can re-run a review with their own instructions, and suggestions they declined before aren't repeated.
 
----
+**Admin flow.**
+- **Approve:** the admin sees an AI-written summary of the changes. Approving runs the PII purge a second time and writes the syllabus to the knowledge base source bucket. An S3 event goes through SQS to a Sync Lambda, which ingests it into KB2.
+- **Reject:** the admin must leave notes, which the faculty member sees.
+- **Emails:** either decision changes the syllabus status in DynamoDB. A DynamoDB Stream, filtered to just those changes, triggers a Lambda that emails the faculty member through Amazon SES.
 
-## Beneficiary projects
+**Data.** DynamoDB holds syllabi, reviews, and feedback. The admin approval queue is an index on the Syllabi table. Every version is stored in an S3 bucket encrypted with KMS. Syllabi and their versions expire after 180 days, except approved syllabi, which stay in the shared library.
 
-| Organization | Project | What it is | Docs |
-|---|---|---|---|
-| **ASPPH** | PHACT: Public Health AI Curriculum Transformation | Faculty upload a syllabus and get AI-integration recommendations and competency insights that cite ASPPH sources, with human review | [Vision](ASPPH/Vision%20Document_ASPPH_PHACT%20%28MVP%29.md) · [Technical](ASPPH/Technical%20Document_ASPPH_PHACT%20%28MVP%29.md) · [Resources](ASPPH/resources) |
-| **CodeAI** | Adaptive Learning Engine | An adaptive K-12 computer science lesson that checks student work and routes each student to the next skill without teacher intervention | [Vision](CodeAI/Vision%20Document_%20CodeAI%20Adaptive%20Engine%20%28MVP%29.md) · [Technical](CodeAI/Technical%20Document_%20CodeAI%20Adaptive%20Engine%20%28MVP%29.md) |
-| **Digital Green Foundation** | FarmerChat Contextual MEL Survey Agent | Personalized follow-up surveys, timed to the crop calendar, about the advice each farmer received from FarmerChat | [Vision](Digital%20Green%20Foundation/Vision%20Document_%20Digital%20Green%20FarmerChat%20Contextual%20MEL%20Survey%20Agent%20%28MVP%29.docx) · [Technical](Digital%20Green%20Foundation/Technical%20Document_%20Digital%20Green%20FarmerChat%20Contextual%20MEL%20Survey%20Agent%20%28MVP%29.docx) |
-| **Everytown** | Organizational Capacity Index (OCI) Platform | An LLM layer on Bedrock that turns a violence-intervention nonprofit's assessment answers into a personalized recommendations report | [Vision](Everytown/Everytown_OCI_Vision.md) · [Technical](Everytown/Everytown_OCI_Tech.md) · [Package](Everytown/Everytown_OCI_Package.zip) |
-| **Fair Trade USA** | Producer Exchange Agent | A multilingual agent that gives producers data and peer examples for a challenge they describe, then writes the exchange back as a tagged record | [Vision](Fair%20Trade%20USA/Vision%20Document_%20Fair%20Trade%20USA%20Producer%20Exchange%20Agent%20%28MVP%29.docx) · [Technical](Fair%20Trade%20USA/Technical%20Document_%20Fair%20Trade%20USA%20Producer%20Exchange%20Agent%20%28MVP%29.docx) |
-| **GreatSchools** | Guided Agent | An agentic search that asks parents clarifying questions and returns ranked, explained schools, programs, and funding options | [Vision](GreatSchools/Vision%20-%20Final%20-%20GreatSchools.md) · [Technical](GreatSchools/Tech%20-%20Final%20-%20GreatSchools.md) · [Sample data](GreatSchools/Sample%20Data) |
-| **Medic Mobile** | No-Code CHT Configuration | Health ministry teams turn clinical guidelines into Community Health Toolkit workflows without code, with automated checks and human approval | [Vision](Medic%20Mobile/vision-document-no-code-cht-configuration.md) · [Technical](Medic%20Mobile/technical-environment-document-no-code-cht-configuration.md) · [Video](Medic%20Mobile/no-code-cht-scope-and-boundaries-v2.mp4) |
-| **MMRF** | ORION | Agent querying of biomedical knowledge graphs and orchestration of analytical tools for multiple myeloma research | [Vision](MMRF/Vision_ORION-revised.docx) · [Technical](MMRF/Tech_ORION-revised.docx) |
-| **One Degree** | The Resource Engine | Ingests community resource data, normalizes it to Open Referral HSDS, serves it by API, and uses AI to flag stale or wrong records | [Vision](One%20Degree/One-Degree-vision-document.md) · [Technical](One%20Degree/One-Degree-technical-document.md) · [More background](One%20Degree/OneDegree-additional-tech-background.md) |
-| **ReadWorks** | Sound Along | Read-along audio for reading passages, with human or synthetic voice, so students hear and see the words together | [Vision](ReadWorks/BB-vision-document.md.docx) · [Technical](ReadWorks/BB-technical-document.md.docx) |
-| **Renaissance Philanthropy (Clay)** | Earth Dataset Foundry | A sandbox that traces and scores agentic geospatial workflows run against MCP tools | [Vision](Renaissance%20Philanthropy%20%28Clay%29/Clay-Foundry-Vision-Hackathon.md) · [Technical](Renaissance%20Philanthropy%20%28Clay%29/Clay-Foundry-Technical-Hackathon.md) |
-| **World Resources Institute** | AskWRI | A research assistant on Bedrock and AgentCore that finds, summarizes, and cites WRI publications, with translation | [Vision](World%20Resources%20Institute/AskWRI-vision-document.md) · [Technical](World%20Resources%20Institute/AskWRI-technical-document.md) |
+| Concern | Service |
+| --- | --- |
+| Hosting | Amazon CloudFront, Amazon S3 |
+| Sign-in and roles | Amazon Cognito (user pool with `faculty` and `admin` groups) |
+| API | Amazon API Gateway (REST) with a Cognito authorizer, about 18 AWS Lambda functions (Python 3.12) |
+| Async work | Amazon SQS (review queues, knowledge base sync queue) |
+| AI | Amazon Bedrock: Claude, Guardrails, Knowledge Bases with Amazon S3 Vectors and Titan embeddings |
+| Personal data | Amazon Comprehend PII detection |
+| Data | Amazon DynamoDB (with a Stream), Amazon S3 |
+| Email | Amazon SES |
 
-> `.docx` files don't render on GitHub. Select **View raw** to download them.
+## Deploy
+
+### Prerequisites
+
+- AWS CLI v2, signed in to the target account (`aws sts get-caller-identity` works)
+- AWS SAM CLI (`brew install aws-sam-cli`)
+- Python 3.12
+- Node 22 and pnpm (`brew install node@22 pnpm`) to build the front end. Without them, the backend still deploys and the front end step is skipped with a message.
+- Amazon Bedrock access in `us-east-1` to the Claude model you choose and to Titan Text Embeddings V2
+
+### Run the deploy script
+
+```bash
+cd ASPPH/PHACT
+export AWS_PROFILE=<your profile>                   # if not your default
+export PHACT_MODEL_ID=<Claude inference profile>    # optional; defaults to Claude Sonnet 4.5
+export PHACT_FACULTY_PASSWORD='<12+ chars, upper, lower, number>'
+export PHACT_ADMIN_PASSWORD='<12+ chars, upper, lower, number>'
+./scripts/deploy.sh
+```
+
+The script:
+
+1. Builds and deploys the `phact` stack to `us-east-1` with `sam build` and `sam deploy`.
+2. Saves the stack outputs to `.phact/outputs.json`.
+3. Uploads the CEPH competency files, which starts the KB1 ingestion.
+4. Creates the demo users `faculty@phact.demo` and `admin@phact.demo` with your passwords.
+5. Checks the API's `/health` endpoint.
+6. Builds the front end against the new stack, uploads it to S3, and refreshes CloudFront.
+
+It ends by printing the web app's URL. Re-running it is safe, and only what changed is redeployed. The first deploy takes an extra 5 to 10 minutes while CloudFront rolls out.
+
+Passwords are only read from environment variables. Never commit them.
+
+### Optional settings
+
+| Variable | What it does |
+| --- | --- |
+| `PHACT_NOTIFICATION_SENDER` | A sender address you can verify in SES. Without it, decision emails are built and recorded as "not sent". In the SES sandbox, recipients must be verified too. |
+| `PHACT_ALLOWED_ORIGIN` | The browser origin allowed by CORS (default `*`) |
+| `PHACT_DATA_MODE` | `live` (default) calls the API. `mock` builds the front end with simulated data. |
+| `PHACT_SKIP_FRONTEND` | Set to anything to deploy the backend only |
+| `STACK_NAME`, `AWS_REGION` | Default `phact` and `us-east-1` |
+
+### After the first deploy
+
+Seed the shared library so AI recommendations have peer examples to cite. This runs once per new stack:
+
+```bash
+python3 scripts/seed_kb2.py      # uploads, submits, and approves the seed syllabi
+python3 scripts/kb_check.py      # confirms both knowledge bases can be searched
+```
+
+`scripts/` also has end-to-end checks against the deployed stack: `smoke_test.py`, `review_test.py`, and `approval_test.py`.
+
+## Repository layout
+
+```
+template.yaml        All infrastructure (SAM / CloudFormation), including front end hosting
+samconfig.toml       SAM defaults
+backend/functions/   One folder per Lambda function
+backend/shared/      Lambda layer: data access, reviews, PII purge, guardrail, auth
+frontend/            React app (Vite); its docs are in frontend/docs/
+data/                CEPH competency files and synthetic seed syllabi
+scripts/             deploy.sh, seeding, and deploy checks
+tests/               Unit tests with mocked AWS; tests/e2e/ runs the app locally in a browser
+docs/                Architecture diagram and the technical reference
+```
+
+## Testing
+
+```bash
+pip install "boto3>=1.39" "moto[dynamodb,s3]>=5" pytest pypdf
+python3 -m pytest tests -q
+```
+
+`tests/e2e/` runs the real Lambda handlers on your machine with AWS mocked, and clicks through both roles in a headless browser. No AWS account is needed.
+
+## More detail
+
+[`docs/REFERENCE.md`](docs/REFERENCE.md) covers:
+- how personal data is purged at each step
+- how reviews become versions
+- how approval and decision emails work
+- data retention
+- running the app locally
+- every API endpoint and error code
