@@ -5,8 +5,6 @@ import { EmptyState, ErrorNote, Icon, JobBadge, PageHeader, Status, errorText, f
 import { useReview, useSyllabus, type AppCtx } from "../components/workspace"
 
 const MAX_MB = 10
-/** Subjects match the ones approved syllabi are filed under, so peer examples from the same subject are found first. */
-export const SUBJECTS = ["Epidemiology", "Biostatistics", "Environmental Health", "Health Policy", "Program Planning and Evaluation", "Community Health", "Global Health", "Health Equity", "Ethics"]
 
 function validateFile(file: File): string {
   const lower = file.name.toLowerCase()
@@ -23,7 +21,6 @@ export function Upload({ ctx }: { ctx: AppCtx }) {
   const [manual, setManual] = useState(false)
   const [text, setText] = useState("")
   const [title, setTitle] = useState("")
-  const [subject, setSubject] = useState(SUBJECTS[0])
   const [institution, setInstitution] = useState("")
   const [description, setDescription] = useState("")
   const [progress, setProgress] = useState<number | null>(null)
@@ -55,7 +52,7 @@ export function Upload({ ctx }: { ctx: AppCtx }) {
       setProgress(0)
       setStep("Uploading and checking your syllabus")
       const created = await api.uploadSyllabus(
-        { file: pasted ? undefined : file || undefined, text: pasted ? text : undefined, title: title.trim(), subject, institution: institution.trim() || undefined, description: description.trim() || undefined },
+        { file: pasted ? undefined : file || undefined, text: pasted ? text : undefined, title: title.trim(), institution: institution.trim() || undefined, description: description.trim() || undefined },
         setProgress,
       )
       setExtracted(created.extractedText)
@@ -115,10 +112,7 @@ export function Upload({ ctx }: { ctx: AppCtx }) {
               <textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste course objectives, schedule, assignments, and policies here..." />
             </label>
           )}
-          <div className="form-grid">
-            <label>Course title<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. EPID 601: Applied Epidemiologic Methods" /></label>
-            <label>Subject<select value={subject} onChange={(e) => setSubject(e.target.value)}>{SUBJECTS.map((s) => <option key={s}>{s}</option>)}</select></label>
-          </div>
+          <label>Course title<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. EPID 601: Applied Epidemiologic Methods" /></label>
           <label>Institution <small className="muted">(optional; shown if this syllabus is approved as a peer example)</small><input value={institution} onChange={(e) => setInstitution(e.target.value)} placeholder="e.g. Harbor State University" /></label>
           <label>Course description <small className="muted">(optional)</small><textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A short summary of the course and its audience" /></label>
         </section>
